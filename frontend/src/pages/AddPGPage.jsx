@@ -152,7 +152,7 @@ const AddPGPage = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 hover:scale-[1.02] text-white font-black py-4 rounded-2xl mt-8 shadow-xl shadow-orange-500/30 uppercase tracking-widest text-sm transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
+            className="w-full bg-linear-to-r from-orange-500 to-yellow-500 hover:scale-[1.02] text-white font-black py-4 rounded-2xl mt-8 shadow-xl shadow-orange-500/30 uppercase tracking-widest text-sm transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100"
           >
             {loading ? "Publishing Property..." : "Add Property"}
           </button>

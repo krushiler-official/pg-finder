@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:5000/api",
+    baseURL: "https://pg-finder-77mq.onrender.com/api",
 });
 
 // Optional: Add a request interceptor to include the JWT token in headers if it exists
