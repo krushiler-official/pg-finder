@@ -1,0 +1,657 @@
+================================================================================
+                        PG FINDER — COMPLETE PROJECT DOCUMENTATION
+                        MERN Stack | Role-Based | Full Feature Guide
+================================================================================
+
+This document describes every single feature, file, API route, database schema,
+and behavior of the PG Finder web application. Use this as a complete reference.
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+PG Finder is a full-stack MERN web application for discovering, comparing, and
+booking Paying Guest (PG) accommodations. It supports three user roles:
+  - user    → browses and books PGs
+  - owner   → lists and manages their own PGs, views bookings
+  - admin   → full system control (view/delete all users, PGs, bookings)
+
+Tech Stack:
+  - Frontend : React 19 + Vite + Tailwind CSS + React Router DOM v7
+  - Backend  : Node.js + Express 5 + MongoDB + Mongoose
+  - Auth     : JWT (jsonwebtoken) + bcryptjs password hashing
+  - Icons    : Lucide React
+  - Alerts   : React Hot Toast
+  - HTTP     : Axios (with JWT interceptor)
+
+================================================================================
+2. PROJECT FOLDER STRUCTURE
+================================================================================
+
+8th-sem-pg-finder 2/
+├── backend/
+│   ├── config/
+│   │   └── db.js                  → MongoDB connection using mongoose.connect()
+│   ├── controllers/
+│   │   ├── adminController.js     → Admin: get/delete users, PGs, bookings
+│   │   ├── bookingController.js   → Create booking, get user bookings, get owner bookings
+│   │   ├── pgController.js        → CRUD for PGs (public + owner-protected)
+│   │   └── userController.js      → Register + Login with JWT
+│   ├── middleware/
+│   │   ├── authMiddleware.js      → protect (JWT verify) + owner (role check)
+│   │   └── roleMiddleware.js      → re-exports protect/owner + requireRole() factory
+│   ├── models/
+│   │   ├── Booking.js             → Booking schema
+│   │   ├── PG.js                  → PG schema
+│   │   └── User.js                → User schema with role
+│   ├── routes/
+│   │   ├── adminRoutes.js         → /api/admin/* (admin protected)
+│   │   ├── bookingRoutes.js       → /api/bookings/*
+│   │   ├── pgRoutes.js            → /api/pgs/*
+│   │   └── userRoutes.js          → /api/users/*
+│   ├── .env                       → PORT, MONGO_URI, JWT_SECRET
+│   └── server.js                  → Express app entry point
+
+└── frontend/src/
+    ├── components/
+    │   ├── FilterPanel.jsx        → Location/price/gender filter sidebar
+    │   ├── Footer.jsx             → Site footer
+    │   ├── Header.jsx             → Role-aware navbar (user/owner/admin)
+    │   ├── OwnerSidebar.jsx       → Owner dashboard left sidebar
+    │   └── PGCard.jsx             → PG listing card with wishlist + compare
+    ├── context/
+    │   └── AppContext.jsx         → Global state: auth, darkMode, compare, wishlist
+    ├── pages/
+    │   ├── AddPGPage.jsx          → Owner: form to add a new PG
+    │   ├── AdminPanel.jsx         → Admin: tabbed dashboard (overview/users/pgs/bookings)
+    │   ├── ComparePage.jsx        → Side-by-side PG comparison
+    │   ├── DashboardPage.jsx      → User wishlist page
+    │   ├── HomePage.jsx           → Hero + featured PG listings
+    │   ├── LoginPage.jsx          → Login form with role-based redirect
+    │   ├── MyBookingsPage.jsx     → User's confirmed bookings
+    │   ├── OwnerBookings.jsx      → Owner: all bookings for their PGs
+    │   ├── OwnerDashboard.jsx     → Owner: stats + latest bookings feed
+    │   ├── OwnerMyPGs.jsx         → Owner: manage PGs with inline edit modal
+    │   ├── PGDetailPage.jsx       → PG detail + booking modal
+    │   ├── RegisterPage.jsx       → Register with role selection
+    │   └── SearchPage.jsx         → Search + filter PG listings
+    ├── utils/
+    │   └── api.js                 → Axios instance with JWT auto-attach interceptor
+    └── App.jsx                    → All routes + PrivateRoute + OwnerRoute guards
+
+================================================================================
+3. MONGODB DATABASE
+================================================================================
+
+Database Name: pg-finder (set in .env MONGO_URI)
+
+Collections (auto-created on first insert — NO manual setup needed):
+
+--- COLLECTION: users ---
+{
+  _id        : ObjectId (auto)
+  name       : String (required)
+  email      : String (required, unique)
+  password   : String (hashed by bcryptjs before save)
+  role       : String — enum: ["user", "owner", "admin"], default: "user"
+  createdAt  : Date (auto, timestamps: true)
+  updatedAt  : Date (auto, timestamps: true)
+}
+
+--- COLLECTION: pgs ---
+{
+  _id        : ObjectId (auto)
+  name       : String
+  location   : String
+  area       : String
+  price      : Number (monthly rent in ₹)
+  gender     : String — "Boys" | "Girls" | "Co-ed"
+  amenities  : [String]
+  image      : String (cover image URL)
+  images     : [String] (gallery image URLs)
+  ownerId    : ObjectId → ref: "User" (set automatically from JWT on add)
+}
+
+--- COLLECTION: bookings ---
+{
+  _id          : ObjectId (auto)
+  user         : ObjectId → ref: "User" (required)
+  pg           : ObjectId → ref: "PG" (required)
+  checkInDate  : Date (required)
+  checkOutDate : Date (optional)
+  totalPrice   : Number (default: 0)
+  mobile       : String (guest mobile number)
+  workplace    : String (guest workplace or college)
+  status       : String (default: "Confirmed")
+  createdAt    : Date (auto)
+  updatedAt    : Date (auto)
+}
+
+--- MANUAL DB STEP (ONE TIME ONLY) ---
+To create the first admin account:
+1. Register normally on the site with any email
+2. Open mongosh and run:
+   db.users.updateOne({ email: "your@email.com" }, { $set: { role: "admin" } })
+That's the ONLY manual database action required in the entire project.
+
+================================================================================
+4. BACKEND — ENV FILE
+================================================================================
+
+File: backend/.env
+
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/pg-finder
+JWT_SECRET=your_secret_key_here
+
+================================================================================
+5. BACKEND — SERVER ENTRY (server.js)
+================================================================================
+
+- Loads dotenv, connects MongoDB
+- Registers middleware: cors(), express.json()
+- Mounts routes:
+    /api/pgs       → pgRoutes
+    /api/users     → userRoutes
+    /api/bookings  → bookingRoutes
+    /api/admin     → adminRoutes
+- Listens on PORT (default 5000)
+
+================================================================================
+6. BACKEND — MODELS
+================================================================================
+
+User.js:
+  - Pre-save hook hashes password using bcrypt.genSalt(10)
+  - Instance method matchPassword(enteredPassword) for login comparison
+  - role field: enum ["user", "owner", "admin"], default "user"
+
+PG.js:
+  - ownerId references User._id
+  - No timestamps (simple schema)
+
+Booking.js:
+  - user + pg are ObjectId refs (required)
+  - mobile and workplace stored as strings
+  - totalPrice stored as Number for clean revenue calculation
+  - timestamps: true
+
+================================================================================
+7. BACKEND — MIDDLEWARE
+================================================================================
+
+authMiddleware.js:
+  protect:
+    - Reads Authorization: Bearer <token> header
+    - Verifies JWT using JWT_SECRET
+    - Loads user from DB (minus password) into req.user
+    - Returns 401 if token missing/invalid
+
+  owner:
+    - Checks req.user.role === "owner"
+    - Returns 403 if not owner
+
+roleMiddleware.js:
+  - Re-exports protect and owner from authMiddleware
+  - Exports requireRole(role) factory function for future use
+    Usage: requireRole("admin") or requireRole("owner")
+
+================================================================================
+8. BACKEND — API ROUTES & CONTROLLERS
+================================================================================
+
+--- USER ROUTES (/api/users) ---
+
+POST /api/users/register
+  Body: { name, email, password, role }
+  - Creates user, hashes password, returns JWT + user data
+  - role defaults to "user" if not provided
+
+POST /api/users/login
+  Body: { email, password }
+  - Validates credentials, returns JWT + user data including role
+
+--- PG ROUTES (/api/pgs) ---
+
+GET /api/pgs
+  - Public. Returns ALL PGs from database (used by HomePage + SearchPage)
+
+GET /api/pgs/:id
+  - Public. Returns single PG by ID (used by PGDetailPage)
+
+POST /api/pgs/owner/add-pg          [protect + owner]
+  Body: { name, location, area, price, gender, amenities, image, images }
+  - Creates PG with ownerId = req.user._id (from JWT)
+
+GET /api/pgs/owner/my-pgs           [protect + owner]
+  - Returns only PGs where ownerId === logged-in owner's _id
+
+PUT /api/pgs/owner/update-pg/:id    [protect + owner]
+  Body: any PG fields to update
+  - Verifies ownerId matches before updating
+
+DELETE /api/pgs/owner/delete-pg/:id [protect + owner]
+  - Verifies ownerId matches before deleting
+
+--- BOOKING ROUTES (/api/bookings) ---
+
+POST /api/bookings
+  Body: { pgId, userId, checkInDate, checkOutDate, totalPrice, mobile, workplace }
+  - Creates booking. Validates PG and User exist.
+  - Stores mobile + workplace for owner/admin visibility
+
+GET /api/bookings/user/:userId
+  - Returns all bookings for a specific user (populated with PG data)
+
+GET /api/bookings/owner/bookings    [protect + owner]
+  - Finds all PGs owned by req.user._id
+  - Returns all bookings for those PGs
+  - Populated with: pg (name, price, location) + user (name, email)
+  - Enriches totalPrice from pg.price if not stored
+
+--- ADMIN ROUTES (/api/admin) ---
+All routes require: protect + role === "admin"
+
+GET /api/admin/users
+  - Returns all users (password excluded), sorted newest first
+
+DELETE /api/admin/users/:id
+  - Deletes user. Blocks deletion of admin accounts.
+
+GET /api/admin/pgs
+  - Returns all PGs, populated with ownerId (name, email)
+
+DELETE /api/admin/pgs/:id
+  - Deletes any PG regardless of owner
+
+GET /api/admin/bookings
+  - Returns all bookings, populated with user (name, email) + pg (name, location, price)
+
+================================================================================
+9. FRONTEND — GLOBAL STATE (AppContext.jsx)
+================================================================================
+
+Provides via React Context:
+  userInfo        → logged-in user object { _id, name, email, role, token }
+  darkMode        → boolean, persisted in localStorage
+  compareList     → array of PG objects, persisted in localStorage
+  wishlist        → array of PG objects, persisted in localStorage
+
+Functions:
+  login(data)          → sets userInfo + saves to localStorage
+  logout()             → clears userInfo + shows toast
+  toggleDarkMode()     → toggles dark class on <html>
+  addToCompare(pg)     → adds PG to compareList (max no limit, deduped)
+  removeFromCompare(id)→ removes PG from compareList
+  toggleWishlist(pg)   → adds/removes PG from wishlist
+
+================================================================================
+10. FRONTEND — AXIOS INSTANCE (utils/api.js)
+================================================================================
+
+Base URL: http://localhost:5000/api
+
+Request Interceptor:
+  - Reads userInfo from localStorage
+  - If token exists, attaches: Authorization: Bearer <token>
+  - All owner + admin API calls automatically authenticated
+
+================================================================================
+11. FRONTEND — ROUTE PROTECTION (App.jsx)
+================================================================================
+
+PrivateRoute:
+  - Requires userInfo to exist
+  - Redirects to /login if not logged in
+  - Wraps: /, /search, /pg/:id, /dashboard, /compare, /my-bookings, /admin/*
+
+OwnerRoute:
+  - Requires userInfo AND role === "owner"
+  - Redirects to /login if not logged in
+  - Redirects to / if logged in but not owner
+  - Wraps: /owner/dashboard, /owner/my-pgs, /owner/add-pg, /owner/bookings
+
+FloatingHomeButton:
+  - Only renders for role === "user"
+  - Hidden for owner and admin (they have their own navbars)
+
+Public Routes (no auth required):
+  - /login
+  - /register
+
+================================================================================
+12. FRONTEND — HEADER (Header.jsx)
+================================================================================
+
+Three completely different headers based on userInfo.role:
+
+USER HEADER (role === "user" or not logged in):
+  - Logo: "PG Finder" in orange
+  - Search bar with location input + search button
+  - Nav links: Explore, Compare, Wishlist, My Bookings
+  - User avatar with name + Logout button
+  - Dark mode toggle
+  - Mobile hamburger menu
+
+OWNER HEADER (role === "owner"):
+  - Logo: "PG Finder" + orange "Owner" badge
+  - Nav links: Dashboard, My PGs, Add PG, Bookings (with icons)
+  - Active link highlighted with orange underline
+  - Owner avatar + name in orange pill
+  - Dark mode toggle
+  - Logout button with red color
+
+ADMIN HEADER (role === "admin"):
+  - Dark background (gray-950)
+  - Logo: "PG Finder" + red "Admin" badge
+  - Nav links: Dashboard, Users, PGs, Bookings (with icons)
+  - Admin avatar in red pill
+  - Logout button with red border
+
+================================================================================
+13. FRONTEND — PAGES
+================================================================================
+
+--- HomePage.jsx ---
+  - Hero section with background image, gradient overlay
+  - "Explore Spaces" CTA button → /search
+  - Fetches all PGs from GET /api/pgs
+  - Shows first 6 PGs as PGCard components
+  - "View All PGs" link → /search
+
+--- SearchPage.jsx ---
+  - Fetches all PGs from GET /api/pgs
+  - Left sidebar: FilterPanel (location, max price slider, gender dropdown)
+  - Filters applied client-side (no extra API call)
+  - Reads ?location= query param from URL (set by header search)
+  - Grid of PGCard components for filtered results
+
+--- PGDetailPage.jsx ---
+  - Fetches single PG by ID from GET /api/pgs/:id
+  - Image gallery with prev/next navigation + thumbnails
+  - PG info: name, location, area, gender badge, price
+  - Amenities grid
+  - "Book PG" button → opens booking modal
+  Booking Modal contains:
+    - Full Name (read-only, from userInfo)
+    - Email (read-only, from userInfo)
+    - Mobile Number (required, 10 digits, type=tel)
+    - Workplace / College (required, free text)
+    - Move-in Date (date picker, min = today)
+    - Total Price display
+    - Confirm Booking button
+  On submit: POST /api/bookings with all fields
+
+--- LoginPage.jsx ---
+  - Email + password form
+  - On success: saves userInfo to context + localStorage
+  - Role-based redirect:
+      role === "owner" → /owner/dashboard
+      role === "admin" → /admin
+      role === "user"  → /
+
+--- RegisterPage.jsx ---
+  - Name, email, password fields
+  - Role toggle: "Regular User" | "PG Owner" (pill toggle UI)
+  - On success: auto-login + role-based redirect
+
+--- DashboardPage.jsx ---
+  - Shows user's wishlist (saved PGs)
+  - Uses PGCard components
+  - Empty state if no wishlisted PGs
+
+--- MyBookingsPage.jsx ---
+  - Fetches GET /api/bookings/user/:userId
+  - Shows booking cards with:
+      PG image, name, location
+      Move-in date
+      Mobile number
+      Workplace
+      Monthly rent
+      Confirmed status badge
+  - Empty state with "Explore PGs" CTA
+
+--- ComparePage.jsx ---
+  - Shows PGs added to compareList from context
+  - Side-by-side cards showing: image, name, location, price, area, amenities
+  - "Remove from comparison" button per card
+
+--- OwnerDashboard.jsx ---
+  - Fetches GET /api/pgs/owner/my-pgs + GET /api/bookings/owner/bookings
+  - Stat cards: Active Properties, Total Bookings, Est. Monthly Revenue
+  - Latest Bookings table (last 5):
+      Guest avatar + name + email
+      Property name + location
+      Move-in date
+      Mobile + Workplace
+      Status badge
+
+--- OwnerMyPGs.jsx ---
+  - Fetches GET /api/pgs/owner/my-pgs
+  - Grid of PG cards showing image, name, location, price, gender
+  - Edit button → opens EditModal (inline overlay)
+  - Delete button → DELETE /api/pgs/owner/delete-pg/:id with confirm dialog
+  EditModal:
+    - Pre-fills all PG fields
+    - On save: PUT /api/pgs/owner/update-pg/:id
+    - Refreshes list on success
+
+--- AddPGPage.jsx ---
+  - Form fields: Property Name, City/Location, Area, Monthly Rent,
+                 Gender (select), Amenities (comma-separated), Cover Image URL
+  - On submit: POST /api/pgs/owner/add-pg
+  - Amenities string split by comma into array before sending
+  - On success: redirects to /owner/my-pgs
+  - Added PG immediately visible on HomePage and SearchPage for all users
+
+--- OwnerBookings.jsx ---
+  - Fetches GET /api/bookings/owner/bookings
+  - Table columns: Guest Name, Property, Move-in Date, Contact Email,
+                   Mobile, Workplace, Booking Status
+  - Empty state if no bookings
+
+--- AdminPanel.jsx ---
+  - Fetches /api/admin/users + /api/admin/pgs + /api/admin/bookings on load
+  - 4 tabs: Overview, Users, PGs, Bookings
+
+  Overview Tab:
+    - 5 stat cards: Regular Users, PG Owners, Total PGs, Total Bookings, Total Revenue
+    - Latest 5 bookings table
+
+  Users Tab:
+    - Full users table: avatar, name, email, role badge, join date, delete button
+    - Cannot delete admin accounts (blocked on backend too)
+
+  PGs Tab:
+    - All PGs: name, location, price, gender badge, owner name, delete button
+
+  Bookings Tab:
+    - All bookings: guest name+email, PG name+location, move-in date,
+                    mobile, workplace, amount, status
+
+================================================================================
+14. FRONTEND — COMPONENTS
+================================================================================
+
+PGCard.jsx:
+  - Displays PG image, gender badge, name, location, area, amenities (first 3)
+  - Wishlist heart button (toggles orange fill)
+  - Price + Compare/Remove button
+  - Entire card links to /pg/:id
+
+FilterPanel.jsx:
+  - Location text input
+  - Max price range slider (₹6k–₹30k)
+  - Gender dropdown (All / Male / Female / Unisex)
+  - Reset Filters button
+
+OwnerSidebar.jsx:
+  - Sticky left sidebar for all owner pages
+  - Links: Dashboard, My PGs, Add New PG, Bookings
+  - Active link highlighted in orange
+  - Owner name displayed at top
+  - Secure Logout button at bottom
+
+Header.jsx:
+  - See Section 12 above for full details
+
+================================================================================
+15. FRONTEND — THEME SYSTEM
+================================================================================
+
+- Dark mode toggled via button in Header
+- Stored in localStorage key "darkMode"
+- On toggle: adds/removes "dark" class on <html> element
+- All components use Tailwind dark: prefix classes
+- Glassmorphism style: bg-white/80 backdrop-blur-md for overlays
+- Color palette:
+    Primary:   orange-500 (#f97316)
+    Secondary: yellow-500
+    Dark bg:   gray-950, gray-900
+    Light bg:  white, gray-50
+
+================================================================================
+16. FEATURE: PG OWNER ADDS PG → SHOWS ON USER SIDE
+================================================================================
+
+Flow:
+1. Owner logs in → redirected to /owner/dashboard
+2. Owner goes to /owner/add-pg
+3. Fills form → POST /api/pgs/owner/add-pg
+4. PG saved in MongoDB pgs collection with ownerId attached
+5. GET /api/pgs (used by HomePage + SearchPage) returns ALL PGs with no filter
+6. New PG immediately appears on:
+   - HomePage (Popular Listings section, first 6)
+   - SearchPage (all filtered results)
+   - Accessible at /pg/:id for booking
+
+================================================================================
+17. FEATURE: USER BOOKS PG → OWNER GETS UPDATE ON DASHBOARD
+================================================================================
+
+Flow:
+1. User visits /pg/:id
+2. Clicks "Book PG" → modal opens
+3. Fills: mobile, workplace, move-in date
+4. POST /api/bookings → booking saved with user._id + pg._id
+5. Owner visits /owner/dashboard
+6. Dashboard fetches GET /api/bookings/owner/bookings
+7. Backend finds all PGs with ownerId === owner._id
+8. Returns all bookings for those PGs
+9. Owner sees new booking in "Latest Bookings" table immediately
+10. Owner also sees updated Total Bookings count + Revenue
+
+================================================================================
+18. ROLE-BASED BEHAVIOR SUMMARY
+================================================================================
+
+On Login:
+  role === "user"  → redirect to /
+  role === "owner" → redirect to /owner/dashboard
+  role === "admin" → redirect to /admin
+
+On Register:
+  role === "user"  → redirect to /
+  role === "owner" → redirect to /owner/dashboard
+
+Route Access:
+  /login, /register          → anyone (no auth)
+  /, /search, /pg/:id, etc.  → logged-in users only (PrivateRoute)
+  /owner/*                   → logged-in owners only (OwnerRoute)
+  /admin/*                   → logged-in admins only (PrivateRoute, admin check in backend)
+
+Header shown:
+  Not logged in / user → standard white header with search
+  owner                → orange-accented owner header
+  admin                → dark gray admin header
+
+Floating home button:
+  user  → visible (bottom-left)
+  owner → hidden (has sidebar + header nav)
+  admin → hidden (has header nav)
+
+================================================================================
+19. RUNNING THE PROJECT LOCALLY
+================================================================================
+
+Prerequisites:
+  - Node.js v16+
+  - MongoDB running locally OR MongoDB Atlas URI
+
+Step 1 — Backend:
+  cd backend
+  npm install
+  Create .env file:
+    PORT=5000
+    MONGO_URI=mongodb://localhost:27017/pg-finder
+    JWT_SECRET=any_random_secret_string
+  npm run dev
+  → Server runs on http://localhost:5000
+
+Step 2 — Frontend:
+  cd frontend
+  npm install
+  npm run dev
+  → App runs on http://localhost:5173
+
+Step 3 — Create Admin (one time):
+  Register on the site normally
+  Open mongosh:
+    use pg-finder
+    db.users.updateOne({ email: "your@email.com" }, { $set: { role: "admin" } })
+  Login again → redirected to /admin
+
+================================================================================
+20. BACKEND DEPENDENCIES
+================================================================================
+
+express      ^5.2.1   → HTTP server + routing
+mongoose     ^9.2.2   → MongoDB ODM
+bcryptjs     ^3.0.3   → Password hashing
+jsonwebtoken ^9.0.3   → JWT generation + verification
+cors         ^2.8.6   → Cross-origin requests
+dotenv       ^17.3.1  → Environment variables
+nodemon      ^3.1.14  → Dev auto-restart (devDependency)
+
+================================================================================
+21. FRONTEND DEPENDENCIES
+================================================================================
+
+react              ^19.2.0   → UI library
+react-dom          ^19.2.0   → DOM rendering
+react-router-dom   ^7.13.0   → Client-side routing
+axios              ^1.13.5   → HTTP requests
+tailwindcss        ^4.1.18   → Utility CSS
+lucide-react       ^0.575.0  → Icons
+react-hot-toast    ^2.6.0    → Toast notifications
+vite               ^7.3.1    → Build tool + dev server
+
+================================================================================
+22. KNOWN BEHAVIORS & NOTES
+================================================================================
+
+1. Price field in PG model is Number. Store as plain number (e.g. 8000).
+   The frontend displays it as ₹8,000 / Month.
+
+2. Old bookings (before mobile/workplace fields were added) will show "—"
+   in those columns. No migration needed.
+
+3. Old PGs without ownerId will show as "Unassigned" in admin PGs table
+   and will NOT appear in any owner's My PGs page.
+
+4. The compareList and wishlist are stored in localStorage only (not DB).
+   They persist across page refreshes but are device-specific.
+
+5. Admin panel tab state is local — refreshing the page resets to Overview tab.
+
+6. The owner sidebar is hidden on mobile (md:flex). Mobile owner navigation
+   is handled through the owner header only.
+
+7. JWT token expiry is set to 30 days. After expiry, user must log in again.
+
+8. All owner API routes verify ownerId matches req.user._id before
+   allowing update/delete — owners cannot modify other owners' PGs.
+
+================================================================================
+                              END OF DOCUMENTATION
+================================================================================

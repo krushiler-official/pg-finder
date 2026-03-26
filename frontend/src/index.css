@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Space Grotesk", "sans-serif";
+  --font-body: "Outfit", "sans-serif";
+
+  --color-vibrant-orange: #FF5E00;
+  --color-vibrant-yellow: #FFB800;
+  --color-accent-yellow: #FFF200;
+  --color-light-orange: #FFF7ED;
+}
+
+/* Base styles using Tailwind v4 @layer */
+@layer base {
+  body {
+    @apply bg-white text-gray-900 transition-colors duration-300 antialiased;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Custom Utilities */
+@layer utilities {
+  .animate-shake {
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+  }
+
+  .animate-slow-zoom {
+    animation: slow-zoom 30s linear infinite alternate;
+  }
+}
+
+@keyframes shake {
+
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+@keyframes slow-zoom {
+  from {
+    transform: scale(1.05);
+  }
+
+  to {
+    transform: scale(1.15);
+  }
+}
+
+/* 🌗 Smooth Theme Transition */
+* {
+  transition: background-color 0.4s ease,
+    color 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
