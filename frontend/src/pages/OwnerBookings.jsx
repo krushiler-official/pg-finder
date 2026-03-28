@@ -3,6 +3,7 @@ import api from "../utils/api";
 import OwnerSidebar from "../components/OwnerSidebar";
 import toast from "react-hot-toast";
 import { Users, Calendar, MapPin, Phone, Briefcase } from "lucide-react";
+import api from "../utils/api";
 
 const OwnerBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -11,7 +12,7 @@ const OwnerBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const { data } = await api.get("/bookings/owner/bookings");
+        const { data } = await api.get(`/bookings/user/${userInfo._id}`);
         setBookings(data);
       } catch (error) {
         toast.error("Failed to load property bookings");
@@ -39,7 +40,7 @@ const OwnerBookings = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
           </div>
         ) : bookings.length === 0 ? (
-          <div className="bg-white dark:bg-gray-900 p-12 rounded-[2rem] border border-gray-100 dark:border-gray-800 text-center flex flex-col items-center justify-center">
+          <div className="bg-white dark:bg-gray-900 p-12 rounded-4xl border border-gray-100 dark:border-gray-800 text-center flex flex-col items-center justify-center">
             <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6 text-gray-400">
                <Users size={40} />
             </div>
@@ -49,7 +50,7 @@ const OwnerBookings = () => {
             </p>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-900 rounded-[2rem] border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/20 dark:shadow-none overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-4xl border border-gray-100 dark:border-gray-800 shadow-xl shadow-gray-200/20 dark:shadow-none overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>

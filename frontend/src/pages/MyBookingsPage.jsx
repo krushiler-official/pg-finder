@@ -3,6 +3,7 @@ import axios from "axios";
 import { useApp } from "../context/AppContext";
 import { Calendar, MapPin, CheckCircle, Phone, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
+import api from "../utils/api";
 
 const MyBookingsPage = () => {
   const { userInfo } = useApp();
@@ -15,9 +16,7 @@ const MyBookingsPage = () => {
       if (!userInfo?._id) return;
 
       try {
-        const { data } = await axios.get(
-          `http://localhost:5000/api/bookings/user/${userInfo._id}`
-        );
+       const { data } = await api.get(`/bookings/user/${userInfo._id}`);
         setBookings(data);
       } catch (err) {
         console.error(err);
@@ -92,7 +91,7 @@ const MyBookingsPage = () => {
               });
 
               return (
-                <div key={booking._id} className="bg-white dark:bg-gray-900 rounded-[2rem] shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-orange-500/10 transition-shadow">
+                <div key={booking._id} className="bg-white dark:bg-gray-900 rounded-4xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-orange-500/10 transition-shadow">
                   
                   {/* Image Header */}
                   <div className="relative h-48 w-full">
