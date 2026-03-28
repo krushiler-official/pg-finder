@@ -31,9 +31,9 @@ const HomePage = () => {
             className="w-full h-full object-cover scale-105 animate-slow-zoom"
           />
           {/* Main Gradient Overlay for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent dark:from-gray-950 dark:via-gray-950/80 dark:to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-white via-white/80 to-transparent dark:from-gray-950 dark:via-gray-950/80 dark:to-transparent z-10"></div>
           {/* Accent Glow */}
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-orange-500/10 to-transparent z-10"></div>
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-linear-to-l from-orange-500/10 to-transparent z-10"></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-6 relative z-20">
@@ -45,7 +45,7 @@ const HomePage = () => {
 
             <h1 className="text-7xl md:text-9xl font-black leading-[0.85] mb-8 text-gray-900 dark:text-gray-50 tracking-tighter drop-shadow-sm">
               Find your <br />
-              <span className="bg-gradient-to-r from-orange-500 via-orange-400 to-yellow-500 bg-clip-text text-transparent italic pl-1">Ideal Stay.</span>
+              <span className="bg-linear-to-r from-orange-500 via-orange-400 to-yellow-500 bg-clip-text text-transparent italic pl-1">Ideal Stay.</span>
             </h1>
 
             <p className="text-gray-600 dark:text-gray-300 mb-12 text-xl md:text-2xl font-semibold leading-relaxed max-w-2xl">
@@ -57,7 +57,7 @@ const HomePage = () => {
               <Link to="/search">
                 <button className="relative group overflow-hidden bg-gray-950 dark:bg-orange-500 text-white px-14 py-6 rounded-[2.5rem] text-lg font-black shadow-2xl transition-all duration-500 hover:-translate-y-2 hover:shadow-orange-500/40 active:scale-95 uppercase tracking-widest leading-none">
                   <span className="relative z-10">Explore Spaces</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute inset-0 bg-linear-to-r from-orange-500 to-yellow-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </button>
               </Link>
 
@@ -84,7 +84,7 @@ const HomePage = () => {
         <div className="flex items-end justify-between mb-20">
           <div>
             <h2 className="text-6xl font-black text-gray-900 dark:text-white tracking-tighter mb-4">
-              Popular <span className="bg-gradient-to-r from-vibrantOrange to-vibrantYellow bg-clip-text text-transparent">Listings</span>
+              Popular <span className="bg-linear-to-r from-vibrantOrange to-vibrantYellow bg-clip-text text-transparent">Listings</span>
             </h2>
             <p className="text-gray-400 dark:text-gray-500 font-bold uppercase tracking-[0.3em] text-[10px]">Handpicked accommodations for you</p>
           </div>

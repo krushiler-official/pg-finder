@@ -15,7 +15,7 @@ connectDB();
 const app = express();
 // ✅ CORS (IMPORTANT for Netlify frontend)
 app.use(cors({
-  origin: "*", // later you can replace with your Netlify URL
+  origin: process.env.FRONTEND_URL || "*",
   credentials: true
 }));
 // Middleware

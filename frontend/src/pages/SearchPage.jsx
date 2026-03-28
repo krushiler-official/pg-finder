@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import PGCard from "../components/PGCard";
 import FilterPanel from "../components/FilterPanel";
 import { useLocation } from "react-router-dom";
@@ -22,7 +22,7 @@ const SearchPage = () => {
 
   useEffect(() => {
     const fetchPGs = async () => {
-      const { data } = await axios.get("http://localhost:5000/api/pgs");
+      const { data } = await api.get("/pgs");
       setPgs(data);
     };
     fetchPGs();

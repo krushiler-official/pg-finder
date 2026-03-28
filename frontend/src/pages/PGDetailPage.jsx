@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { ChevronLeft, ChevronRight, Calendar, X } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import toast from "react-hot-toast";
@@ -21,9 +21,7 @@ const PGDetailPage = () => {
   useEffect(() => {
     const fetchPG = async () => {
       try {
-        const { data } = await axios.get(
-          `http://localhost:5000/api/pgs/${id}`
-        );
+        const { data } = await api.get(`/pgs/${id}`);
         setPg(data);
         setActiveImage(0);
       } catch (error) {
@@ -81,7 +79,7 @@ const PGDetailPage = () => {
 
     try {
       setIsBooking(true);
-      const { data } = await axios.post("http://localhost:5000/api/bookings", {
+      const { data } = await api.post("/bookings", {
         pgId: pg._id,
         userId: userInfo._id,
         checkInDate: bookingDate,
