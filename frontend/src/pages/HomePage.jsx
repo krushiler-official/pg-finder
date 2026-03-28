@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import PGCard from "../components/PGCard";
 
 const HomePage = () => {
@@ -9,7 +9,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchPGs = async () => {
       try {
-        const { data } = await axios.get("http://localhost:5000/api/pgs");
+        const { data } = await api.get("/pgs");
         setPgs(data);
       } catch (error) {
         console.error(error);
