@@ -3,7 +3,7 @@ import api from "../utils/api";
 import OwnerSidebar from "../components/OwnerSidebar";
 import toast from "react-hot-toast";
 import { Users, Calendar, MapPin, Phone, Briefcase } from "lucide-react";
-import api from "../utils/api";
+
 
 const OwnerBookings = () => {
   const [bookings, setBookings] = useState([]);
