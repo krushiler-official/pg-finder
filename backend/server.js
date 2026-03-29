@@ -16,9 +16,17 @@ connectDB();
 
 const app = express();
 
-// ✅ CORS (IMPORTANT for Netlify frontend)
+// ✅ CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  process.env.FRONTEND_URL || "https://pgfinder-us.netlify.app",
+];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "https://pgfinder-us.netlify.app",// later you can replace with your Netlify URL
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) callback(null, true);
+    else callback(new Error("Not allowed by CORS"));
+  },
   credentials: true
 }));
 
