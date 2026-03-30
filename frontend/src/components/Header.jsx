@@ -101,6 +101,11 @@ const Header = () => {
               </div>
               <span className="text-sm font-bold text-white hidden sm:block">{userInfo.name}</span>
             </div>
+            <button onClick={toggleDarkMode} className="relative w-14 h-7 bg-gray-800 rounded-full flex items-center px-1 transition duration-300 shadow-inner border border-gray-700">
+              <div className={`absolute left-1 top-1 w-5 h-5 rounded-full bg-gray-600 shadow flex items-center justify-center transition-all duration-300 ${darkMode ? "translate-x-7" : "translate-x-0"}`}>
+                {darkMode ? <Moon size={11} className="text-yellow-400" /> : <Sun size={11} className="text-orange-400" />}
+              </div>
+            </button>
             <button onClick={logout} className="flex items-center gap-1.5 text-sm font-bold text-red-400 hover:text-red-300 px-3 py-2 rounded-xl transition-colors border border-red-500/20 hover:border-red-500/50">
               <LogOut size={15} /> Logout
             </button>
