@@ -25,10 +25,16 @@ const RegisterPage = () => {
     try {
       const { data } = await api.post("/users/register", formData);
       login(data);
-      toast.success(data.role === "owner" ? "Owner Account Created!" : "Registration successful! Welcome.");
+      toast.success(
+        data.role === "owner" ? "Owner Account Created!" :
+        data.role === "admin" ? "Admin Account Created!" :
+        "Registration successful! Welcome."
+      );
       
       if (data.role === "owner") {
         navigate("/owner/dashboard");
+      } else if (data.role === "admin") {
+        navigate("/admin");
       } else {
         navigate("/");
       }
@@ -83,18 +89,18 @@ const RegisterPage = () => {
           <div className="flex bg-gray-50 dark:bg-gray-800 rounded-2xl p-1.5 border-2 border-gray-50 dark:border-gray-800">
             <button
               type="button"
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold tracking-widest uppercase transition-all duration-300 ${
+              className={`flex-1 py-3 px-2 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
                 formData.role === "user"
                   ? "bg-white dark:bg-gray-900 text-orange-500 shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               }`}
               onClick={() => setFormData({ ...formData, role: "user" })}
             >
-              Regular User
+              User
             </button>
             <button
               type="button"
-              className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold tracking-widest uppercase transition-all duration-300 ${
+              className={`flex-1 py-3 px-2 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
                 formData.role === "owner"
                   ? "bg-white dark:bg-gray-900 text-orange-500 shadow-sm"
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
@@ -102,6 +108,17 @@ const RegisterPage = () => {
               onClick={() => setFormData({ ...formData, role: "owner" })}
             >
               PG Owner
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-3 px-2 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
+                formData.role === "admin"
+                  ? "bg-white dark:bg-gray-900 text-red-500 shadow-sm"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              }`}
+              onClick={() => setFormData({ ...formData, role: "admin" })}
+            >
+              Admin
             </button>
           </div>
 

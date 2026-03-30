@@ -43,6 +43,27 @@ export const adminDeletePG = async (req, res) => {
     }
 };
 
+export const adminUpdatePG = async (req, res) => {
+    try {
+        const pg = await PG.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if (!pg) return res.status(404).json({ message: "PG not found" });
+        res.json(pg);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+export const deleteBooking = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) return res.status(404).json({ message: "Booking not found" });
+        await booking.deleteOne();
+        res.json({ message: "Booking deleted" });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export const getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()

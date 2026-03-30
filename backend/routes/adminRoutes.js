@@ -1,5 +1,5 @@
 import express from "express";
-import { getAllUsers, deleteUser, getAllPGs, adminDeletePG, getAllBookings } from "../controllers/adminController.js";
+import { getAllUsers, deleteUser, getAllPGs, adminDeletePG, adminUpdatePG, getAllBookings, deleteBooking } from "../controllers/adminController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -16,8 +16,10 @@ router.get("/users", getAllUsers);
 router.delete("/users/:id", deleteUser);
 
 router.get("/pgs", getAllPGs);
+router.put("/pgs/:id", adminUpdatePG);
 router.delete("/pgs/:id", adminDeletePG);
 
 router.get("/bookings", getAllBookings);
+router.delete("/bookings/:id", deleteBooking);
 
 export default router;
