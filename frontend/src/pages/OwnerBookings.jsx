@@ -12,7 +12,7 @@ const OwnerBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const { data } = await api.get(`/bookings/user/${userInfo._id}`);
+        const { data } = await api.get("/bookings/owner/bookings");
         setBookings(data);
       } catch (error) {
         toast.error("Failed to load property bookings");
