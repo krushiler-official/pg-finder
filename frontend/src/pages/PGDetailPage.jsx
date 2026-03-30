@@ -83,6 +83,7 @@ const PGDetailPage = () => {
         pgId: pg._id,
         userId: userInfo._id,
         checkInDate: bookingDate,
+        totalPrice: pg.price,
         mobile,
         workplace,
       });

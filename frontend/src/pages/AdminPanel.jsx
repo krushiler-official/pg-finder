@@ -20,6 +20,8 @@ const StatCard = ({ title, value, icon: Icon, color }) => (
 
 const TABS = ["Overview", "Users", "PGs", "Bookings"];
 
+const getAmount = (b) => b.totalPrice || b.pg?.price || 0;
+
 const AdminPanel = () => {
   const [tab, setTab] = useState("Overview");
   const [stats, setStats] = useState({ users: 0, owners: 0, pgs: 0, bookings: 0, revenue: 0 });
@@ -45,7 +47,7 @@ const AdminPanel = () => {
           owners: u.filter(x => x.role === "owner").length,
           pgs: p.length,
           bookings: b.length,
-          revenue: b.reduce((sum, bk) => sum + (bk.totalPrice || 0), 0),
+          revenue: b.reduce((sum, bk) => sum + getAmount(bk), 0),
         });
       } catch {
         toast.error("Failed to load admin data");
@@ -72,6 +74,15 @@ const AdminPanel = () => {
       setPGs(pgs.filter(p => p._id !== id));
       toast.success("PG deleted");
     } catch { toast.error("Failed to delete PG"); }
+  };
+
+  const handleDeleteBooking = async (id) => {
+    if (!window.confirm("Delete this booking?")) return;
+    try {
+      await api.delete(`/admin/bookings/${id}`);
+      setBookings(bookings.filter(b => b._id !== id));
+      toast.success("Booking deleted");
+    } catch { toast.error("Failed to delete booking"); }
   };
 
   const thCls = "p-4 text-left text-xs font-black uppercase tracking-widest text-gray-400 dark:text-gray-500";
@@ -150,7 +161,7 @@ const AdminPanel = () => {
                             <td className={tdCls}>{b.user?.name || "—"}</td>
                             <td className={tdCls + " text-orange-500 font-bold"}>{b.pg?.name || "—"}</td>
                             <td className={tdCls}>{new Date(b.checkInDate).toLocaleDateString()}</td>
-                            <td className={tdCls + " font-black text-green-500"}>₹{b.totalPrice || 0}</td>
+                            <td className={tdCls + " font-black text-green-500"}>₹{getAmount(b).toLocaleString()}</td>
                             <td className={tdCls}>
                               <span className="px-2 py-1 rounded-full text-xs font-black bg-green-50 dark:bg-green-500/10 text-green-500 uppercase tracking-widest">
                                 {b.status}
@@ -244,7 +255,7 @@ const AdminPanel = () => {
                           <td className={tdCls}>
                             <span className="flex items-center gap-1"><MapPin size={13} className="text-orange-400" />{p.location}</span>
                           </td>
-                          <td className={tdCls + " font-black text-orange-500"}>₹{p.price}</td>
+                          <td className={tdCls + " font-black text-orange-500"}>₹{p.price?.toLocaleString()}</td>
                           <td className={tdCls}>
                             <span className={`px-2 py-1 rounded-full text-xs font-black uppercase tracking-widest ${
                               p.gender === "Boys" ? "bg-blue-50 dark:bg-blue-500/10 text-blue-500"
@@ -283,6 +294,7 @@ const AdminPanel = () => {
                         <th className={thCls}>Workplace</th>
                         <th className={thCls}>Amount</th>
                         <th className={thCls}>Status</th>
+                        <th className={thCls}>Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -303,11 +315,16 @@ const AdminPanel = () => {
                           <td className={tdCls}>
                             <span className="flex items-center gap-1"><Briefcase size={13} className="text-orange-400" />{b.workplace || "—"}</span>
                           </td>
-                          <td className={tdCls + " font-black text-green-500"}>₹{b.totalPrice || 0}</td>
+                          <td className={tdCls + " font-black text-green-500"}>₹{getAmount(b).toLocaleString()}</td>
                           <td className={tdCls}>
                             <span className="px-2 py-1 rounded-full text-xs font-black bg-green-50 dark:bg-green-500/10 text-green-500 uppercase tracking-widest">
                               {b.status}
                             </span>
+                          </td>
+                          <td className={tdCls}>
+                            <button onClick={() => handleDeleteBooking(b._id)} className="p-2 rounded-xl text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-colors">
+                              <Trash2 size={16} />
+                            </button>
                           </td>
                         </tr>
                       ))}
