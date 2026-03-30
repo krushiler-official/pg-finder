@@ -42,7 +42,7 @@ const FloatingHomeButton = () => {
   return (
     <Link
       to="/"
-      className="fixed top-4 left-4 z-[100] p-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all group lg:flex items-center gap-2"
+      className="fixed top-4 left-4 z-100 p-3 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 rounded-2xl shadow-xl hover:scale-110 active:scale-95 transition-all group lg:flex items-center gap-2"
       title="Go to Home"
     >
       <svg className="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ function App() {
       <Header />
       <Toaster position="top-center" />
 
-      <main className="flex-grow">
+      <main className="grow">
         <Routes>
           {/* Public routes — login/register only */}
           <Route path="/login" element={<LoginPage />} />

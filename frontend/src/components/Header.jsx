@@ -80,18 +80,6 @@ const Header = () => {
           </Link>
 
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/admin" className={`font-semibold text-sm transition-all ${isActive("/admin") ? "text-white border-b-2 border-orange-500 pb-0.5" : "text-gray-400 hover:text-white"}`}>
-              <span className="flex items-center gap-1.5"><LayoutDashboard size={15} /> Dashboard</span>
-            </Link>
-            <Link to="/admin/users" className={`font-semibold text-sm transition-all ${isActive("/admin/users") ? "text-white border-b-2 border-orange-500 pb-0.5" : "text-gray-400 hover:text-white"}`}>
-              <span className="flex items-center gap-1.5"><Users size={15} /> Users</span>
-            </Link>
-            <Link to="/admin/pgs" className={`font-semibold text-sm transition-all ${isActive("/admin/pgs") ? "text-white border-b-2 border-orange-500 pb-0.5" : "text-gray-400 hover:text-white"}`}>
-              <span className="flex items-center gap-1.5"><Building2 size={15} /> PGs</span>
-            </Link>
-            <Link to="/admin/bookings" className={`font-semibold text-sm transition-all ${isActive("/admin/bookings") ? "text-white border-b-2 border-orange-500 pb-0.5" : "text-gray-400 hover:text-white"}`}>
-              <span className="flex items-center gap-1.5"><CalendarCheck size={15} /> Bookings</span>
-            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
