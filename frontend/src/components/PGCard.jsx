@@ -23,7 +23,7 @@ const PGCard = ({ pg }) => {
     <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] shadow-xl hover:shadow-orange-200 dark:hover:shadow-orange-950/20 transition-all duration-500 p-5 border border-transparent dark:border-gray-800 group">
 
       {/* Image Section */}
-      <Link to={`/pg/${pg._id}`} className="block relative overflow-hidden rounded-[2rem]">
+      <Link to={`/pg/${pg._id}`} className="block relative overflow-hidden rounded-4xl">
         <img
           src={displayImage}
           alt={pg.name}
